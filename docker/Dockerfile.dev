@@ -26,29 +26,60 @@ ARG IPEX_URL=https://software.intel.com/ipex-whl-stable
 ENV PYTHONUNBUFFERED TRUE
 
 RUN --mount=type=cache,id=apt-dev,target=/var/cache/apt \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    fakeroot \
-    ca-certificates \
-    dpkg-dev \
-    sudo \
-    g++ \
-    git \
-    python3.8 \
-    python3.8-dev \
-    python3.8-venv \
-    python3.8-distutils \
-   # python3-venv \
-    build-essential \
-    openjdk-17-jdk \
-    curl \
-    vim \
-    numactl \ 
-    && if [ "$BUILD_WITH_IPEX" = "true" ]; then apt-get update && apt-get install -y libjemalloc-dev libgoogle-perftools-dev libomp-dev && ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so /usr/lib/libjemalloc.so && ln -s /usr/lib/x86_64-linux-gnu/libtcmalloc.so /usr/lib/libtcmalloc.so && ln -s /usr/lib/x86_64-linux-gnu/libiomp5.so /usr/lib/libiomp5.so; fi \
-    && rm -rf /var/lib/apt/lists/* \
-    && cd /tmp \
-    && curl -O https://bootstrap.pypa.io/get-pip.py \
-    && python3.8 get-pip.py
+    if [ "$CUDA_VERSION" = "cu117" ]; then \
+        apt-get update && \
+        apt install dirmngr ca-certificates software-properties-common apt-transport-https -y && \
+        gpg --list-keys && \
+        gpg --no-default-keyring --keyring /usr/share/keyrings/deadsnakes.gpg --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776 && \
+        echo 'deb [signed-by=/usr/share/keyrings/deadsnakes.gpg] https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main'>> /etc/apt/sources.list.d/python.list && \
+        apt update && apt-get update && \
+        DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        fakeroot \
+        ca-certificates \
+        dpkg-dev \
+        sudo \
+        g++ \
+        git \
+        python3.8 \
+        python3.8-dev \
+        python3.8-venv \
+        python3.8-distutils \
+       # python3-venv \
+        build-essential \
+        openjdk-17-jdk \
+        curl \
+        vim \
+        numactl \
+        && if [ "$BUILD_WITH_IPEX" = "true" ]; then apt-get update && apt-get install -y libjemalloc-dev libgoogle-perftools-dev libomp-dev && ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so /usr/lib/libjemalloc.so && ln -s /usr/lib/x86_64-linux-gnu/libtcmalloc.so /usr/lib/libtcmalloc.so && ln -s /usr/lib/x86_64-linux-gnu/libiomp5.so /usr/lib/libiomp5.so; fi \
+        && rm -rf /var/lib/apt/lists/* \
+        && cd /tmp \
+        && curl -O https://bootstrap.pypa.io/get-pip.py \
+        && python3.8 get-pip.py; \
+    else \
+        apt-get update && \
+        DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        fakeroot \
+        ca-certificates \
+        dpkg-dev \
+        sudo \
+        g++ \
+        git \
+        python3.8 \
+        python3.8-dev \
+        python3.8-venv \
+        python3.8-distutils \
+       # python3-venv \
+        build-essential \
+        openjdk-17-jdk \
+        curl \
+        vim \
+        numactl \
+        && if [ "$BUILD_WITH_IPEX" = "true" ]; then apt-get update && apt-get install -y libjemalloc-dev libgoogle-perftools-dev libomp-dev && ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so /usr/lib/libjemalloc.so && ln -s /usr/lib/x86_64-linux-gnu/libtcmalloc.so /usr/lib/libtcmalloc.so && ln -s /usr/lib/x86_64-linux-gnu/libiomp5.so /usr/lib/libiomp5.so; fi \
+        && rm -rf /var/lib/apt/lists/* \
+        && cd /tmp \
+        && curl --connect-timeout 60 -O https://bootstrap.pypa.io/get-pip.py \
+        && python3.8 get-pip.py; \
+    fi
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 \
     && update-alternatives --install /usr/local/bin/pip pip /usr/local/bin/pip3.8 1
